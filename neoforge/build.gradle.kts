@@ -10,6 +10,7 @@ base {
 }
 
 repositories {
+    mavenCentral()
     maven("https://maven.shedaniel.me/")
     maven("https://repo.momirealms.net/releases")
 }
@@ -28,6 +29,11 @@ neoForge {
             sourceSet(sourceSets.main.get())
         }
     }
+
+    unitTest {
+        enable()
+        testedMod = mods.getByName("craftengine")
+    }
 }
 
 dependencies {
@@ -35,6 +41,8 @@ dependencies {
     val sparrowYaml = "net.momirealms:sparrow-yaml:1.0.8"
     jarJar(implementation(sparrowYaml)!!)
     add("additionalRuntimeClasspath", sparrowYaml)
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
@@ -60,4 +68,8 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
     withSourcesJar()
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

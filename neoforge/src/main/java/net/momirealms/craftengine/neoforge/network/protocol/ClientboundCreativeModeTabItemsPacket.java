@@ -24,6 +24,7 @@ public record ClientboundCreativeModeTabItemsPacket(Action action,
             ClientboundCreativeModeTabItemsPacket::encode,
             ClientboundCreativeModeTabItemsPacket::decode
     );
+    private static boolean compatibilityModeLogged;
 
     private static ClientboundCreativeModeTabItemsPacket decode(FriendlyByteBuf buf) {
         Action action = buf.readEnum(Action.class);
@@ -39,6 +40,7 @@ public record ClientboundCreativeModeTabItemsPacket(Action action,
         if (this.action == Action.CLEAR) return;
         buf.writeBytes(itemStacks);
     }
+
 
     @Override
     public ResourceLocation id() {
@@ -58,12 +60,34 @@ public record ClientboundCreativeModeTabItemsPacket(Action action,
     @Override
     public void handle(Context context) {
         if (!(context.networkHandler() instanceof ClientPacketListener listener)) return;
-        RegistryFriendlyByteBuf byteBuf = new RegistryFriendlyByteBuf(this.itemStacks, listener.registryAccess());
+        int start = this.itemStacks.readerIndex();
+        Throwable nativeFailure;
         try {
+            RegistryFriendlyByteBuf byteBuf = new RegistryFriendlyByteBuf(this.itemStacks, listener.registryAccess());
             List<ItemStack> list = byteBuf.readCollection(ArrayList::new, $ -> ItemStack.OPTIONAL_STREAM_CODEC.decode(byteBuf));
+            if (byteBuf.isReadable()) {
+                throw new IllegalArgumentException("Trailing bytes after native item list: " + byteBuf.readableBytes());
+            }
             this.action.execute(list);
+            return;
         } catch (Throwable t) {
-            CraftEngineNeoForgeMod.instance().logger().warn("Failed to handle ClientboundCreativeModeTabItemsPacket", t);
+            nativeFailure = t;
+        }
+
+        this.itemStacks.readerIndex(start);
+        try {
+            RegistryFriendlyByteBuf byteBuf = new RegistryFriendlyByteBuf(this.itemStacks, listener.registryAccess());
+            List<ItemStack> list = Minecraft12111ItemStackDecoder.decodeList(byteBuf);
+            this.action.execute(list);
+            if (!compatibilityModeLogged) {
+                compatibilityModeLogged = true;
+                CraftEngineNeoForgeMod.instance().logger().info("Decoded CraftEngine creative items using Minecraft 1.21.11 compatibility mode");
+            }
+        } catch (Throwable compatibilityFailure) {
+            compatibilityFailure.addSuppressed(nativeFailure);
+            CraftEngineNeoForgeMod.instance().logger().warn("Failed to decode CraftEngine creative items as Minecraft 1.21.8 or 1.21.11", compatibilityFailure);
+        } finally {
+            this.itemStacks.readerIndex(start);
         }
     }
 
