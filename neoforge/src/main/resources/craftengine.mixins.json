@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "package": "net.momirealms.craftengine.neoforge.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "BaseRailBlockMixin",
+    "BlockAccessor",
+    "BlockBehaviourAccessor",
+    "BlockBehaviourInvoker",
+    "BlockStateBaseAccessor",
+    "BlockStateBaseMixin",
+    "ClientConfigurationPacketListenerMixin",
+    "CreativeModeInventoryScreenAccessor",
+    "CreativeModeTabAccessor",
+    "FluidStateMixin",
+    "GhostSlotsMixin",
+    "HolderReferenceInvoker",
+    "ItemBlockRenderTypesMixin",
+    "LoadingOverlayAccessor",
+    "MappedRegistryMixin",
+    "MinecraftMixin",
+    "PropertiesAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

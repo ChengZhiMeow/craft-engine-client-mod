@@ -1,0 +1,40 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="GPL-3.0-only"
+issueTrackerURL="https://github.com/Xiao-MoMi/craft-engine-client-mod/issues"
+
+[[mods]]
+modId="craftengine"
+version="${version}"
+displayName="CraftEngine Client Mod"
+displayURL="https://modrinth.com/mod/craftengine-client-mod"
+logoFile="assets/craftengine/icon.png"
+authors="jhqwqmc, ChengZhIMeow"
+displayTest="IGNORE_ALL_VERSION"
+description='''
+An optional companion client mod for the CraftEngine plugin, ported to NeoForge 1.21.8.
+'''
+
+[[mixins]]
+config="craftengine.mixins.json"
+
+[[dependencies.craftengine]]
+modId="neoforge"
+type="required"
+versionRange="[21.8.52,)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.craftengine]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.8]"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.craftengine]]
+modId="cloth_config"
+type="optional"
+versionRange="[19,)"
+ordering="NONE"
+side="CLIENT"
