@@ -16,6 +16,7 @@
     "GhostSlotsMixin",
     "HolderReferenceInvoker",
     "ItemBlockRenderTypesMixin",
+    "ItemStackRenderStateAccessor",
     "LoadingOverlayAccessor",
     "MappedRegistryMixin",
     "MinecraftMixin",

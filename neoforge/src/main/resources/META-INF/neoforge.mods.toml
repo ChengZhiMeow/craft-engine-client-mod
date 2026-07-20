@@ -38,3 +38,10 @@ type="optional"
 versionRange="[19,)"
 ordering="NONE"
 side="CLIENT"
+
+[[dependencies.craftengine]]
+modId="jade"
+type="optional"
+versionRange="[19.3.1,)"
+ordering="NONE"
+side="CLIENT"

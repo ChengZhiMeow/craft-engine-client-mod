@@ -10,6 +10,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.momirealms.craftengine.neoforge.CraftEngineNeoForgeMod;
+import net.momirealms.craftengine.neoforge.jade.BlockItemModelMatcher;
 import net.momirealms.craftengine.neoforge.mixin.CreativeModeInventoryScreenAccessor;
 import net.momirealms.craftengine.neoforge.mixin.CreativeModeTabAccessor;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
@@ -54,6 +55,7 @@ public final class ItemManager {
             CreativeModeInventoryScreenAccessor.setSelectedTab(CreativeModeTabs.getDefaultTab());
         }
         this.creativeTabItems = creativeTabItems;
+        BlockItemModelMatcher.invalidate();
         ((CreativeModeTabAccessor) this.tab).ce$displayItems(creativeTabItems);
         ((CreativeModeTabAccessor) this.tab).ce$displayItemsSearchTab(new HashSet<>(creativeTabItems));
     }
@@ -64,6 +66,7 @@ public final class ItemManager {
 
     public void clearCreativeTabItems() {
         this.creativeTabItems = List.of();
+        BlockItemModelMatcher.invalidate();
         CreativeModeInventoryScreenAccessor.setSelectedTab(CreativeModeTabs.getDefaultTab());
     }
 }

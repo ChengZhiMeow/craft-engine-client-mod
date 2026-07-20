@@ -6,6 +6,7 @@ import net.momirealms.craftengine.neoforge.commands.CommandManager;
 import net.momirealms.craftengine.neoforge.config.ModConfig;
 import net.momirealms.craftengine.neoforge.config.ModMenuIntegration;
 import net.momirealms.craftengine.neoforge.item.ItemManager;
+import net.momirealms.craftengine.neoforge.jade.BlockItemModelMatcher;
 import net.momirealms.craftengine.neoforge.logger.LoggerFilter;
 import net.momirealms.craftengine.neoforge.logger.ModLogger;
 import net.momirealms.craftengine.neoforge.logger.Slf4jModLogger;
@@ -44,6 +45,7 @@ public class CraftEngineNeoForgeMod {
         modEventBus.addListener(NetworkManager::registerPayloads);
         modEventBus.addListener(this::registerDynamicContent);
         modEventBus.addListener(this::clientSetup);
+        modEventBus.addListener(BlockItemModelMatcher::registerReloadListener);
         modContainer.registerExtensionPoint(IConfigScreenFactory.class,
                 (IConfigScreenFactory) (container, parent) -> ModMenuIntegration.createConfigScreen(parent));
     }

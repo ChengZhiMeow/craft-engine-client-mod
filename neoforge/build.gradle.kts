@@ -12,6 +12,7 @@ base {
 repositories {
     mavenCentral()
     maven("https://maven.shedaniel.me/")
+    maven("https://api.modrinth.com/maven")
     maven("https://repo.momirealms.net/releases")
 }
 
@@ -38,6 +39,7 @@ neoForge {
 
 dependencies {
     compileOnly("me.shedaniel.cloth:cloth-config-neoforge:${property("cloth_version")}")
+    compileOnly("maven.modrinth:jade:19.3.1+neoforge")
     val sparrowYaml = "net.momirealms:sparrow-yaml:1.0.8"
     jarJar(implementation(sparrowYaml)!!)
     add("additionalRuntimeClasspath", sparrowYaml)
