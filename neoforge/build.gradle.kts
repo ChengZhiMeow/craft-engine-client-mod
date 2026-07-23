@@ -39,10 +39,9 @@ neoForge {
 
 dependencies {
     compileOnly("me.shedaniel.cloth:cloth-config-neoforge:${property("cloth_version")}")
-    compileOnly("maven.modrinth:jade:19.3.1+neoforge")
+    compileOnly("maven.modrinth:jade:20.0.5+neoforge")
     val sparrowYaml = "net.momirealms:sparrow-yaml:1.0.8"
     jarJar(implementation(sparrowYaml)!!)
-    add("additionalRuntimeClasspath", sparrowYaml)
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
@@ -55,7 +54,7 @@ tasks.processResources {
 }
 
 tasks.jar {
-    archiveFileName.set("craft-engine-neoforge-mod-${project.version}+mc1.21.8.jar")
+    archiveFileName.set("craft-engine-neoforge-mod-${project.version}+mc1.21.10.jar")
 }
 
 tasks.withType<JavaCompile>().configureEach {

@@ -43,6 +43,17 @@ public final class ModMenuIntegration {
                     )
                     .build());
             general.addEntry(entryBuilder.startBooleanToggle(
+                            Component.translatable("option.craftengine.enable_minecraft_1_21_11_server_compatibility")
+                                    .withStyle(ChatFormatting.WHITE),
+                            ModConfig.INSTANCE.enableMinecraft12111ServerCompatibility())
+                    .setDefaultValue(false)
+                    .setSaveConsumer(ModConfig.INSTANCE::enableMinecraft12111ServerCompatibility)
+                    .setTooltip(
+                            Component.translatable("tooltip.craftengine.enable_minecraft_1_21_11_server_compatibility")
+                                    .withStyle(ChatFormatting.GRAY)
+                    )
+                    .build());
+            general.addEntry(entryBuilder.startBooleanToggle(
                             Component.translatable("option.craftengine.enable_cancel_block_update")
                                     .withStyle(ChatFormatting.WHITE),
                             ModConfig.INSTANCE.enableCancelBlockUpdate())

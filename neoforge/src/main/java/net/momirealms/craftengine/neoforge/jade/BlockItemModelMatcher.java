@@ -40,8 +40,8 @@ public final class BlockItemModelMatcher {
     }
 
     public static void registerReloadListener(AddClientReloadListenersEvent event) {
-        event.addListener(RELOAD_LISTENER_ID, (barrier, resourceManager, preparationExecutor, reloadExecutor) ->
-                barrier.wait(null).thenRunAsync(BlockItemModelMatcher::invalidate, reloadExecutor));
+        event.addListener(RELOAD_LISTENER_ID, (sharedState, preparationExecutor, barrier, reloadExecutor) ->
+                barrier.<Void>wait(null).thenRunAsync(BlockItemModelMatcher::invalidate, reloadExecutor));
     }
 
     public static synchronized void invalidate() {

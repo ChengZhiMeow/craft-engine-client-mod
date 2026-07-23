@@ -3,6 +3,7 @@
 
 # Log file
 *.log
+*.log.gz
 
 # BlueJ files
 *.ctxt
@@ -26,6 +27,7 @@ replay_pid*
 build/
 .gradle/
 .idea/
+/neoforge/run/
 
 !/libs/*.jar
 !/gradle/wrapper/*.jar

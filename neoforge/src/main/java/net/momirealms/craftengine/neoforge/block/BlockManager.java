@@ -63,7 +63,6 @@ public class BlockManager {
         this.mod.logger().info("Registered " + customBlockStates.length + " custom blocks.");
     }
 
-
     private void registerServerSideCustomBlocks(int count) {
         for (int i = 0; i < count; i++) {
             ResourceLocation customBlockId = ResourceLocation.fromNamespaceAndPath("craftengine", "custom_" + i);

@@ -12,7 +12,7 @@ logoFile="assets/craftengine/icon.png"
 authors="jhqwqmc, ChengZhIMeow"
 displayTest="IGNORE_ALL_VERSION"
 description='''
-An optional companion client mod for the CraftEngine plugin, ported to NeoForge 1.21.8.
+An optional companion client mod for the CraftEngine plugin, ported to NeoForge 1.21.10.
 '''
 
 [[mixins]]
@@ -21,27 +21,27 @@ config="craftengine.mixins.json"
 [[dependencies.craftengine]]
 modId="neoforge"
 type="required"
-versionRange="[21.8.52,)"
+versionRange="[21.10.64,)"
 ordering="NONE"
 side="CLIENT"
 
 [[dependencies.craftengine]]
 modId="minecraft"
 type="required"
-versionRange="[1.21.8]"
+versionRange="[1.21.10]"
 ordering="NONE"
 side="CLIENT"
 
 [[dependencies.craftengine]]
 modId="cloth_config"
 type="optional"
-versionRange="[19,)"
+versionRange="[20,)"
 ordering="NONE"
 side="CLIENT"
 
 [[dependencies.craftengine]]
 modId="jade"
 type="optional"
-versionRange="[19.3.1,)"
+versionRange="[20.0.5,)"
 ordering="NONE"
 side="CLIENT"

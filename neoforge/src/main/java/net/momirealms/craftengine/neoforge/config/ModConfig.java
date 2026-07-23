@@ -15,6 +15,7 @@ public class ModConfig {
     public static final Path CONFIG_PATH = CONFIG_DIR.resolve("config.yml");
     private static final SparrowYaml YAML = SparrowYaml.builder().build();
     private boolean enableClientCustomBlock = false;
+    private boolean enableMinecraft12111ServerCompatibility = false;
     private boolean enableCancelBlockUpdate = false;
     private int serverSideBlocks = 10000;
     private boolean disableResourcePackLoadingScreen = false;
@@ -29,6 +30,14 @@ public class ModConfig {
 
     public void enableClientCustomBlock(boolean enable) {
         this.enableClientCustomBlock = enable;
+    }
+
+    public boolean enableMinecraft12111ServerCompatibility() {
+        return enableMinecraft12111ServerCompatibility;
+    }
+
+    public void enableMinecraft12111ServerCompatibility(boolean enable) {
+        this.enableMinecraft12111ServerCompatibility = enable;
     }
 
     public boolean enableCancelBlockUpdate() {
@@ -67,6 +76,7 @@ public class ModConfig {
         try {
             YamlDocument document = Files.exists(CONFIG_PATH) ? YAML.load(CONFIG_PATH) : YAML.load("");
             document.set(Route.from("enable-client-custom-block"), enableClientCustomBlock());
+            document.set(Route.from("enable-minecraft-1-21-11-server-compatibility"), enableMinecraft12111ServerCompatibility());
             document.set(Route.from("enable-cancel-block-update"), enableCancelBlockUpdate());
             document.set(Route.from("server-side-blocks"), serverSideBlocks());
             document.set(Route.from("disable-resource-pack-loading-screen"), disableResourcePackLoadingScreen());
@@ -86,6 +96,7 @@ public class ModConfig {
         try {
             YamlDocument document = YAML.load(CONFIG_PATH);
             enableClientCustomBlock(document.getOrDefault(Boolean.class, false, "enable-client-custom-block"));
+            enableMinecraft12111ServerCompatibility(document.getOrDefault(Boolean.class, false, "enable-minecraft-1-21-11-server-compatibility"));
             enableCancelBlockUpdate(document.getOrDefault(Boolean.class, false, "enable-cancel-block-update"));
             serverSideBlocks(document.getOrDefault(Integer.class, 10000, "server-side-blocks"));
             disableResourcePackLoadingScreen(document.getOrDefault(Boolean.class, false, "disable-resource-pack-loading-screen"));
@@ -97,6 +108,7 @@ public class ModConfig {
 
     private void setDefaultConfig() {
         enableClientCustomBlock(false);
+        enableMinecraft12111ServerCompatibility(false);
         enableCancelBlockUpdate(false);
         serverSideBlocks(10000);
         disableResourcePackLoadingScreen(false);

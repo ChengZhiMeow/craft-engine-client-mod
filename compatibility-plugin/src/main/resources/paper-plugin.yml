@@ -1,0 +1,22 @@
+name: CraftEngineViaCompatibility
+version: "${version}"
+main: net.momirealms.craftengine.viacompat.CraftEngineViaCompatibilityPlugin
+api-version: "1.21.11"
+load: STARTUP
+authors:
+  - XiaoMoMi
+description: Preserves CraftEngine custom block state IDs for 1.21.10 clients behind ViaBackwards.
+dependencies:
+  server:
+    CraftEngine:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    ViaVersion:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    ViaBackwards:
+      load: BEFORE
+      required: true
+      join-classpath: true

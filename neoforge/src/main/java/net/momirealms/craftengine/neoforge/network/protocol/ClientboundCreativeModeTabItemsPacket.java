@@ -7,12 +7,12 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.momirealms.craftengine.neoforge.CraftEngineNeoForgeMod;
+import net.momirealms.craftengine.neoforge.config.ModConfig;
 import net.momirealms.craftengine.neoforge.item.ItemManager;
 import net.momirealms.craftengine.neoforge.network.ClientCustomPacket;
 import net.momirealms.craftengine.neoforge.network.Context;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -24,6 +24,7 @@ public record ClientboundCreativeModeTabItemsPacket(Action action,
             ClientboundCreativeModeTabItemsPacket::encode,
             ClientboundCreativeModeTabItemsPacket::decode
     );
+    private static boolean compatibilityModeLogged;
 
     private static ClientboundCreativeModeTabItemsPacket decode(FriendlyByteBuf buf) {
         Action action = buf.readEnum(Action.class);
@@ -58,12 +59,37 @@ public record ClientboundCreativeModeTabItemsPacket(Action action,
     @Override
     public void handle(Context context) {
         if (!(context.networkHandler() instanceof ClientPacketListener listener)) return;
-        RegistryFriendlyByteBuf byteBuf = new RegistryFriendlyByteBuf(this.itemStacks, listener.registryAccess());
+        if (this.action == Action.CLEAR) {
+            this.action.execute(List.of());
+            return;
+        }
+
+        int start = this.itemStacks.readerIndex();
         try {
-            List<ItemStack> list = byteBuf.readCollection(ArrayList::new, $ -> ItemStack.OPTIONAL_STREAM_CODEC.decode(byteBuf));
+            RegistryFriendlyByteBuf byteBuf = new RegistryFriendlyByteBuf(this.itemStacks, listener.registryAccess());
+            boolean compatibilityEnabled = ModConfig.INSTANCE.enableMinecraft12111ServerCompatibility();
+            List<ItemStack> list = compatibilityEnabled
+                    ? Minecraft12111ItemStackDecoder.decodeList(byteBuf)
+                    : ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(byteBuf);
+            if (byteBuf.isReadable()) {
+                throw new IllegalArgumentException("Trailing bytes after creative item list: " + byteBuf.readableBytes());
+            }
             this.action.execute(list);
-        } catch (Throwable t) {
-            CraftEngineNeoForgeMod.instance().logger().warn("Failed to handle ClientboundCreativeModeTabItemsPacket", t);
+            if (compatibilityEnabled && !compatibilityModeLogged) {
+                compatibilityModeLogged = true;
+                CraftEngineNeoForgeMod.instance().logger().info(
+                        "Decoded CraftEngine creative items using Minecraft 1.21.11 registry compatibility mode"
+                );
+            }
+        } catch (Throwable failure) {
+            CraftEngineNeoForgeMod.instance().logger().warn(
+                    ModConfig.INSTANCE.enableMinecraft12111ServerCompatibility()
+                            ? "Rejected invalid Minecraft 1.21.11 CraftEngine creative item update"
+                            : "Rejected invalid Minecraft 1.21.10 CraftEngine creative item update",
+                    failure
+            );
+        } finally {
+            this.itemStacks.readerIndex(start);
         }
     }
 
