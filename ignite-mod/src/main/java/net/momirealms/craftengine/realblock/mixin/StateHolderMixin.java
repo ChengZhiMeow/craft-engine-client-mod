@@ -7,6 +7,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Map;
+
 /**
  * A CraftEngine placeholder can already be present in a loaded chunk when its
  * canonical block is upgraded to a multi-state real block. Its old state map
@@ -22,8 +24,15 @@ public abstract class StateHolderMixin {
             CallbackInfoReturnable<T> callback
     ) {
         StateHolder<?, ?> state = (StateHolder<?, ?>) (Object) this;
-        if ("ce_state".equals(property.getName()) && !state.getValues().containsKey(property)) {
+        if (shouldUseDefaultValue(property, state.getValues())) {
             callback.setReturnValue(property.getPossibleValues().getFirst());
         }
+    }
+
+    static boolean shouldUseDefaultValue(
+            Property<?> property,
+            Map<Property<?>, Comparable<?>> values
+    ) {
+        return "ce_state".equals(property.getName()) && values.get(property) == null;
     }
 }

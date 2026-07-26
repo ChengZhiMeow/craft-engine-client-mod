@@ -24,4 +24,28 @@ class JadeBlockPresentationTest {
         assertFalse(JadeBlockPresentation.useRegistryPresentation(false, true));
         assertTrue(JadeBlockPresentation.redirectToItemDisplay(false));
     }
+
+    @Test
+    void namedNonEmptyItemDisplayIsUsable() {
+        assertTrue(JadeBlockPresentation.isUsableItemDisplay(false, "真实线缆方块"));
+    }
+
+    @Test
+    void unnamedItemDisplayIsIgnored() {
+        assertFalse(JadeBlockPresentation.isUsableItemDisplay(false, null));
+        assertFalse(JadeBlockPresentation.isUsableItemDisplay(false, "  "));
+    }
+
+    @Test
+    void emptyNamedItemDisplayIsIgnored() {
+        assertFalse(JadeBlockPresentation.isUsableItemDisplay(true, "真实线缆方块"));
+    }
+
+    @Test
+    void directlyTargetedUnnamedItemDisplayIsIgnored() {
+        assertTrue(JadeBlockPresentation.ignoreDirectItemDisplay(true, null));
+        assertTrue(JadeBlockPresentation.ignoreDirectItemDisplay(true, " "));
+        assertFalse(JadeBlockPresentation.ignoreDirectItemDisplay(true, "展示名称"));
+        assertFalse(JadeBlockPresentation.ignoreDirectItemDisplay(false, null));
+    }
 }

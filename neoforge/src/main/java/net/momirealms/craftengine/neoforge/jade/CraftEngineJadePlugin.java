@@ -14,6 +14,7 @@ import net.momirealms.craftengine.neoforge.block.CraftEngineBlock;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.Accessor;
 import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.EntityAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.IWailaClientRegistration;
@@ -38,7 +39,23 @@ public final class CraftEngineJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(CustomBlockProvider.INSTANCE, Block.class);
         registration.registerBlockIcon(CustomBlockProvider.INSTANCE, Block.class);
         registration.addRayTraceCallback((hitResult, accessor, originalAccessor) ->
-                redirectToItemDisplay(registration, accessor));
+                filterRayTraceTarget(registration, accessor));
+    }
+
+    private static @Nullable Accessor<?> filterRayTraceTarget(
+            IWailaClientRegistration registration,
+            @Nullable Accessor<?> accessor
+    ) {
+        if (accessor instanceof EntityAccessor entityAccessor) {
+            boolean itemDisplay = entityAccessor.getEntity() instanceof ItemDisplay;
+            String customName = entityAccessor.getEntity().getCustomName() == null
+                    ? null
+                    : entityAccessor.getEntity().getCustomName().getString();
+            if (JadeBlockPresentation.ignoreDirectItemDisplay(itemDisplay, customName)) {
+                return null;
+            }
+        }
+        return redirectToItemDisplay(registration, accessor);
     }
 
     private static @Nullable Accessor<?> redirectToItemDisplay(
@@ -60,7 +77,10 @@ public final class CraftEngineJadePlugin implements IWailaPlugin {
                 .getEntitiesOfClass(
                         ItemDisplay.class,
                         blockBounds,
-                        display -> !display.getSlot(0).get().isEmpty()
+                        display -> JadeBlockPresentation.isUsableItemDisplay(
+                                display.getSlot(0).get().isEmpty(),
+                                display.getCustomName() == null ? null : display.getCustomName().getString()
+                        )
                 )
                 .stream()
                 .min(Comparator.comparingDouble(display -> display.position().distanceToSqr(hitLocation)))
