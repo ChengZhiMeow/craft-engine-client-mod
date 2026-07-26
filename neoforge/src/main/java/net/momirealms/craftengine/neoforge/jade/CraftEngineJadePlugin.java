@@ -1,5 +1,6 @@
 package net.momirealms.craftengine.neoforge.jade;
 
+import net.minecraft.locale.Language;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Display.ItemDisplay;
 import net.minecraft.world.item.ItemStack;
@@ -8,6 +9,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.momirealms.craftengine.neoforge.CraftEngineNeoForgeMod;
+import net.momirealms.craftengine.neoforge.block.BlockManager;
 import net.momirealms.craftengine.neoforge.block.CraftEngineBlock;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.Accessor;
@@ -47,6 +49,10 @@ public final class CraftEngineJadePlugin implements IWailaPlugin {
                 || !(blockAccessor.getBlock() instanceof CraftEngineBlock)) {
             return accessor;
         }
+        boolean realBlock = realBlockId(blockAccessor.getBlock()).isPresent();
+        if (!JadeBlockPresentation.redirectToItemDisplay(realBlock)) {
+            return accessor;
+        }
 
         Vec3 hitLocation = blockAccessor.getHitResult().getLocation();
         AABB blockBounds = new AABB(blockAccessor.getPosition());
@@ -77,23 +83,32 @@ public final class CraftEngineJadePlugin implements IWailaPlugin {
 
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-            Optional<ItemStack> item = BlockItemModelMatcher.find(accessor.getBlockState());
-            if (item.isEmpty()) {
+            Optional<ResourceLocation> realBlockId = realBlockId(accessor.getBlock());
+            if (realBlockId.isPresent()) {
+                boolean hasRegistryTranslation = Language.getInstance().has(accessor.getBlock().getDescriptionId());
+                if (JadeBlockPresentation.useRegistryPresentation(true, hasRegistryTranslation)) {
+                    return;
+                }
+                replaceWithCraftEngineItem(tooltip, BlockItemModelMatcher.findById(realBlockId.get()));
                 return;
             }
 
-            tooltip.replace(JadeIds.CORE_OBJECT_NAME, IThemeHelper.get().title(item.get().getHoverName()));
-            tooltip.replace(
-                    JadeIds.CORE_MOD_NAME,
-                    ignored -> List.of(List.of(IThemeHelper.get().modName("CraftEngine")))
-            );
+            Optional<ItemStack> item = BlockItemModelMatcher.find(accessor.getBlockState());
+            replaceWithCraftEngineItem(tooltip, item);
         }
 
         @Override
         public @Nullable Element getIcon(BlockAccessor accessor, IPluginConfig config, Element currentIcon) {
+            Optional<ResourceLocation> realBlockId = realBlockId(accessor.getBlock());
+            if (realBlockId.isPresent()) {
+                return BlockItemModelMatcher.findById(realBlockId.get())
+                        .or(() -> BlockItemModelMatcher.find(accessor.getBlockState()))
+                        .map(JadeUI::item)
+                        .orElse(currentIcon);
+            }
             return BlockItemModelMatcher.find(accessor.getBlockState())
                     .map(JadeUI::item)
-                    .orElse(null);
+                    .orElse(currentIcon);
         }
 
         @Override
@@ -110,5 +125,21 @@ public final class CraftEngineJadePlugin implements IWailaPlugin {
         public boolean isRequired() {
             return true;
         }
+
+        private static void replaceWithCraftEngineItem(ITooltip tooltip, Optional<ItemStack> item) {
+            if (item.isEmpty()) {
+                return;
+            }
+            tooltip.replace(JadeIds.CORE_OBJECT_NAME, IThemeHelper.get().title(item.get().getHoverName()));
+            tooltip.replace(
+                    JadeIds.CORE_MOD_NAME,
+                    ignored -> List.of(List.of(IThemeHelper.get().modName("CraftEngine")))
+            );
+        }
+    }
+
+    private static Optional<ResourceLocation> realBlockId(Block block) {
+        BlockManager blockManager = BlockManager.instance();
+        return blockManager == null ? Optional.empty() : blockManager.realBlockId(block);
     }
 }

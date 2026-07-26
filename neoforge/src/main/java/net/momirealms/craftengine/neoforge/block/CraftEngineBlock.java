@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -147,12 +148,23 @@ public class CraftEngineBlock extends Block implements BonemealableBlock, Simple
 
     public static CraftEngineBlock generateBlock(ResourceLocation blockId) {
         CraftEngineBlock newBlockInstance = new CraftEngineBlock(createEmptyBlockProperties(blockId));
-        StateDefinition.Builder<Block, BlockState> stateDefinitionBuilder = new StateDefinition.Builder<>(newBlockInstance);
+        rebuildStateDefinition(newBlockInstance, 1);
+        return newBlockInstance;
+    }
+
+    public static StateDefinition<Block, BlockState> rebuildStateDefinition(CraftEngineBlock block, int stateCount) {
+        if (stateCount <= 0) {
+            throw new IllegalArgumentException("stateCount must be positive");
+        }
+        StateDefinition.Builder<Block, BlockState> stateDefinitionBuilder = new StateDefinition.Builder<>(block);
+        if (stateCount > 1) {
+            stateDefinitionBuilder.add(IntegerProperty.create("ce_state", 0, stateCount - 1));
+        }
         StateDefinition<Block, BlockState> stateDefinition = stateDefinitionBuilder.create(Block::defaultBlockState, CraftEngineStateFactory.INSTANCE);
-        BlockAccessor blockAccessor = (BlockAccessor) newBlockInstance;
+        BlockAccessor blockAccessor = (BlockAccessor) block;
         blockAccessor.ce$setStateDefinition(stateDefinition);
         blockAccessor.ce$setDefaultBlockState(stateDefinition.getPossibleStates().getFirst());
-        return newBlockInstance;
+        return stateDefinition;
     }
 
     private static Properties createEmptyBlockProperties(ResourceLocation id) {

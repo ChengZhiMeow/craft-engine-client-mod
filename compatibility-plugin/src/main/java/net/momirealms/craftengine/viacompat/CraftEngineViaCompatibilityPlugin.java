@@ -1,5 +1,7 @@
 package net.momirealms.craftengine.viacompat;
 
+import net.momirealms.craftengine.bukkit.plugin.BukkitCraftEngine;
+import net.momirealms.craftengine.viacompat.realblock.RealBlockManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -23,6 +25,7 @@ public final class CraftEngineViaCompatibilityPlugin extends JavaPlugin {
     private Plugin viaBackwards;
     private BukkitTask retryTask;
     private int attempts;
+    private RealBlockManager realBlockManager;
 
     @Override
     public void onEnable() {
@@ -33,6 +36,9 @@ public final class CraftEngineViaCompatibilityPlugin extends JavaPlugin {
         int serverSideBlocks = readServerSideBlockCount(craftEngine);
         int extendedRegistrySize = Math.addExact(MINECRAFT_1_21_11_BLOCK_STATE_COUNT, serverSideBlocks);
         verifyMinecraftBlockStateRegistrySize(extendedRegistrySize);
+
+        this.realBlockManager = new RealBlockManager(this, BukkitCraftEngine.instance());
+        this.realBlockManager.enable();
 
         this.mappingPatch = new ViaBlockStateMappingPatch(
                 this.viaBackwards.getClass().getClassLoader(),
@@ -52,6 +58,10 @@ public final class CraftEngineViaCompatibilityPlugin extends JavaPlugin {
         if (this.mappingPatch != null) {
             this.mappingPatch.restore();
             this.mappingPatch = null;
+        }
+        if (this.realBlockManager != null) {
+            this.realBlockManager.disable();
+            this.realBlockManager = null;
         }
     }
 

@@ -54,6 +54,17 @@ public final class ModMenuIntegration {
                     )
                     .build());
             general.addEntry(entryBuilder.startBooleanToggle(
+                            Component.translatable("option.craftengine.enable_real_block")
+                                    .withStyle(ChatFormatting.WHITE),
+                            ModConfig.INSTANCE.enableRealBlock())
+                    .setDefaultValue(true)
+                    .setSaveConsumer(ModConfig.INSTANCE::enableRealBlock)
+                    .setTooltip(
+                            Component.translatable("tooltip.craftengine.enable_real_block")
+                                    .withStyle(ChatFormatting.GRAY)
+                    )
+                    .build());
+            general.addEntry(entryBuilder.startBooleanToggle(
                             Component.translatable("option.craftengine.enable_cancel_block_update")
                                     .withStyle(ChatFormatting.WHITE),
                             ModConfig.INSTANCE.enableCancelBlockUpdate())

@@ -35,4 +35,14 @@ class BlockItemModelMatcherTest {
 
         assertTrue(index.find("shared_model").isEmpty());
     }
+
+    @Test
+    void findsCraftEngineItemDirectlyByItsStableId() {
+        BlockItemModelMatcher.DirectIndex<String, String> index = new BlockItemModelMatcher.DirectIndex<>();
+
+        index.add("zako:test_block", "真实线缆方块");
+        index.add("zako:test_block", "重复的创造栏条目");
+
+        assertEquals("真实线缆方块", index.find("zako:test_block").orElseThrow());
+    }
 }

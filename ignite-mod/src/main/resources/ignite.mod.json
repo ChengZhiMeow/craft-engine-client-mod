@@ -1,0 +1,7 @@
+{
+  "id": "craftengine-real-block",
+  "version": "${version}",
+  "mixins": [
+    "craftengine-real-block.mixins.json"
+  ]
+}

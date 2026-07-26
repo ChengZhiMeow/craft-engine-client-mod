@@ -15,10 +15,12 @@
     "FluidStateMixin",
     "GhostSlotsMixin",
     "HolderReferenceInvoker",
+    "IdMapperAccessor",
     "ItemBlockRenderTypesMixin",
     "ItemStackRenderStateAccessor",
     "LoadingOverlayAccessor",
     "MappedRegistryMixin",
+    "MappedRegistryAccessor",
     "MinecraftMixin",
     "PropertiesAccessor"
   ],

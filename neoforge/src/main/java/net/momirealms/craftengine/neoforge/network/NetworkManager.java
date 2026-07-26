@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
 import net.momirealms.craftengine.neoforge.CraftEngineNeoForgeMod;
+import net.momirealms.craftengine.neoforge.block.BlockManager;
 import net.momirealms.craftengine.neoforge.config.ModConfig;
 import net.momirealms.craftengine.neoforge.network.protocol.*;
 import net.momirealms.craftengine.neoforge.registries.BuiltInRegistries;
@@ -28,7 +29,9 @@ public class NetworkManager {
     public static final StreamCodec<FriendlyByteBuf, ClientboundVisualBlockStatesPacket> VISUAL_BLOCK_STATES = registerClientbound(ClientboundVisualBlockStatesPacket.TYPE, ClientboundVisualBlockStatesPacket.CODEC);
     public static final StreamCodec<FriendlyByteBuf, ClientboundCancelBlockUpdateResponsePacket> CANCEL_BLOCK_UPDATE_RESPONSE = registerClientbound(ClientboundCancelBlockUpdateResponsePacket.TYPE, ClientboundCancelBlockUpdateResponsePacket.CODEC);
     public static final StreamCodec<FriendlyByteBuf, ClientboundCreativeModeTabItemsPacket> CREATIVE_MODE_TAB_ITEMS = registerClientbound(ClientboundCreativeModeTabItemsPacket.TYPE, ClientboundCreativeModeTabItemsPacket.CODEC);
+    public static final StreamCodec<FriendlyByteBuf, ClientboundRealBlocksPacket> REAL_BLOCKS = registerClientbound(ClientboundRealBlocksPacket.TYPE, ClientboundRealBlocksPacket.CODEC);
     public static final StreamCodec<FriendlyByteBuf, ServerboundHandshakePacket> HANDSHAKE = registerServerbound(ServerboundHandshakePacket.TYPE, ServerboundHandshakePacket.CODEC);
+    public static final StreamCodec<FriendlyByteBuf, ServerboundRealBlocksRequestPacket> REQUEST_REAL_BLOCKS = registerServerbound(ServerboundRealBlocksRequestPacket.TYPE, ServerboundRealBlocksRequestPacket.CODEC);
     public static final StreamCodec<FriendlyByteBuf, ServerboundEnableClientCustomBlockPacket> ENABLE_CLIENT_CUSTOM_BLOCK = registerServerbound(ServerboundEnableClientCustomBlockPacket.TYPE, ServerboundEnableClientCustomBlockPacket.CODEC);
     public static final StreamCodec<FriendlyByteBuf, ServerboundCancelBlockUpdateRequestPacket> CANCEL_BLOCK_UPDATE_REQUEST = registerServerbound(ServerboundCancelBlockUpdateRequestPacket.TYPE, ServerboundCancelBlockUpdateRequestPacket.CODEC);
     private static NetworkManager instance;
@@ -41,6 +44,9 @@ public class NetworkManager {
         instance = this;
         this.mod = mod;
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> {
+            if (BlockManager.instance() != null) {
+                BlockManager.instance().clearRealBlocks();
+            }
             configurationListener = null;
             handshakeSent = false;
             serverInstalled(false);
@@ -75,7 +81,10 @@ public class NetworkManager {
                 (payload, context) -> payload.handle(Context.of(context)));
         registrar.commonToClient(ClientboundCreativeModeTabItemsPacket.TYPE, CREATIVE_MODE_TAB_ITEMS,
                 (payload, context) -> payload.handle(Context.of(context)));
+        registrar.commonToClient(ClientboundRealBlocksPacket.TYPE, REAL_BLOCKS,
+                (payload, context) -> payload.handle(Context.of(context)));
         registrar.commonToServer(ServerboundHandshakePacket.TYPE, HANDSHAKE, (payload, context) -> {});
+        registrar.commonToServer(ServerboundRealBlocksRequestPacket.TYPE, REQUEST_REAL_BLOCKS, (payload, context) -> {});
         registrar.commonToServer(ServerboundEnableClientCustomBlockPacket.TYPE, ENABLE_CLIENT_CUSTOM_BLOCK, (payload, context) -> {});
         registrar.commonToServer(ServerboundCancelBlockUpdateRequestPacket.TYPE, CANCEL_BLOCK_UPDATE_REQUEST, (payload, context) -> {});
     }
@@ -110,7 +119,10 @@ public class NetworkManager {
             return;
         }
         handshakeSent = true;
-        if (ModConfig.INSTANCE.enableClientCustomBlock()) {
+        if (ModConfig.INSTANCE.enableRealBlock()) {
+            sendCustomPacket(handler, ServerboundRealBlocksRequestPacket.INSTANCE);
+        }
+        if (ModConfig.INSTANCE.enableClientCustomBlock() || ModConfig.INSTANCE.enableRealBlock()) {
             sendCustomPacket(handler, new ServerboundEnableClientCustomBlockPacket(BlockStateUtils.vanillaStateSize(), Block.BLOCK_STATE_REGISTRY.size()));
         } else if (ModConfig.INSTANCE.enableCancelBlockUpdate()) {
             sendCustomPacket(handler, ServerboundCancelBlockUpdateRequestPacket.INSTANCE);

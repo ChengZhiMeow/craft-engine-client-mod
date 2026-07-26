@@ -33,6 +33,7 @@ public final class BlockItemModelMatcher {
     private static final String CRAFTENGINE_ID = "craftengine:id";
     private static final UniqueIndex<ModelFingerprint, ItemStack> EXACT_MODELS = new UniqueIndex<>();
     private static final UniqueIndex<ModelFingerprint, ItemStack> TEXTURE_MODELS = new UniqueIndex<>();
+    private static final DirectIndex<ResourceLocation, ItemStack> ID_ITEMS = new DirectIndex<>();
     private static final Map<BlockState, Optional<ItemStack>> BLOCK_MATCHES = new IdentityHashMap<>();
     private static boolean indexed;
 
@@ -48,7 +49,16 @@ public final class BlockItemModelMatcher {
         indexed = false;
         EXACT_MODELS.clear();
         TEXTURE_MODELS.clear();
+        ID_ITEMS.clear();
         BLOCK_MATCHES.clear();
+    }
+
+    public static synchronized Optional<ItemStack> findById(ResourceLocation id) {
+        ensureIndex();
+        if (!indexed) {
+            return Optional.empty();
+        }
+        return ID_ITEMS.find(id).map(ItemStack::copy);
     }
 
     public static synchronized Optional<ItemStack> find(BlockState blockState) {
@@ -98,6 +108,11 @@ public final class BlockItemModelMatcher {
             if (customId == null) {
                 continue;
             }
+            ResourceLocation itemId = ResourceLocation.tryParse(customId);
+            if (itemId == null) {
+                continue;
+            }
+            ID_ITEMS.add(itemId, item.copy());
             try {
                 ModelFingerprints fingerprints = fingerprints(minecraft, item);
                 if (fingerprints == null) {
@@ -203,6 +218,22 @@ public final class BlockItemModelMatcher {
         void clear() {
             candidates.clear();
             ambiguous.clear();
+        }
+    }
+
+    static final class DirectIndex<K, V> {
+        private final Map<K, V> values = new HashMap<>();
+
+        void add(K key, V value) {
+            values.putIfAbsent(key, value);
+        }
+
+        Optional<V> find(K key) {
+            return Optional.ofNullable(values.get(key));
+        }
+
+        void clear() {
+            values.clear();
         }
     }
 
