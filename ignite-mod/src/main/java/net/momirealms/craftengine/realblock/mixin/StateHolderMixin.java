@@ -1,13 +1,12 @@
 package net.momirealms.craftengine.realblock.mixin;
 
+import net.momirealms.craftengine.realblock.StateHolderMixinSupport;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.Map;
 
 /**
  * A CraftEngine placeholder can already be present in a loaded chunk when its
@@ -24,15 +23,8 @@ public abstract class StateHolderMixin {
             CallbackInfoReturnable<T> callback
     ) {
         StateHolder<?, ?> state = (StateHolder<?, ?>) (Object) this;
-        if (shouldUseDefaultValue(property, state.getValues())) {
+        if (StateHolderMixinSupport.shouldUseDefaultValue(property, state.getValues())) {
             callback.setReturnValue(property.getPossibleValues().getFirst());
         }
-    }
-
-    static boolean shouldUseDefaultValue(
-            Property<?> property,
-            Map<Property<?>, Comparable<?>> values
-    ) {
-        return "ce_state".equals(property.getName()) && values.get(property) == null;
     }
 }
