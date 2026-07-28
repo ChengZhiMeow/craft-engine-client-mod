@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StateHolderMixinTest {
@@ -26,5 +27,13 @@ class StateHolderMixinTest {
         values.put(property, null);
 
         assertTrue(StateHolderMixinSupport.shouldUseDefaultValue(property, values));
+    }
+
+    @Test
+    void ceStateEncodingUsesMapValueOrFirstValidValue() {
+        IntegerProperty property = IntegerProperty.create("ce_state", 0, 63);
+
+        assertEquals(0, StateHolderMixinSupport.valueOrDefault(property, Map.of()));
+        assertEquals(12, StateHolderMixinSupport.valueOrDefault(property, Map.of(property, 12)));
     }
 }

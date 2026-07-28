@@ -14,4 +14,13 @@ public final class StateHolderMixinSupport {
     ) {
         return "ce_state".equals(property.getName()) && values.get(property) == null;
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Comparable<T>> T valueOrDefault(
+            Property<T> property,
+            Map<Property<?>, Comparable<?>> values
+    ) {
+        Comparable<?> value = values.get(property);
+        return value == null ? property.getPossibleValues().getFirst() : (T) value;
+    }
 }

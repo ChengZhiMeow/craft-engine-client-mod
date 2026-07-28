@@ -7,11 +7,14 @@
   "server": [
     "BlockAccessor",
     "BlockBehaviourAccessor",
+    "BlockInputMixin",
     "HolderReferenceAccessor",
     "IdMapperAccessor",
     "MappedRegistryAccessor",
     "BlockStateBaseMixin",
+    "StateDefinitionMixin",
     "StateHolderMixin",
+    "PropertyMixin",
     "MinecraftServerMixin"
   ]
 }

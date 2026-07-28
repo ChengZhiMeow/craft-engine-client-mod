@@ -14,7 +14,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -28,8 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,24 +47,6 @@ public final class RealBlockRegistryBridge {
     private static final Path MANIFEST = Path.of("plugins", "CraftEngine", "real_blocks.registry.json");
     private static final String STATE_PROPERTY = "ce_state";
     private static final Map<String, Installation> INSTALLATIONS = new LinkedHashMap<>();
-    private static final Set<String> STATE_CACHE_FIELDS = Set.of(
-            "cache",
-            "fluidState",
-            "solidRender",
-            "occlusionShape",
-            "occlusionShapesByFace",
-            "propagatesSkylightDown",
-            "lightBlock",
-            "isConditionallyFullOpaque",
-            "id1",
-            "id2",
-            "occludesFullBlock",
-            "emptyCollisionShape",
-            "emptyConstantCollisionShape",
-            "constantCollisionShape",
-            "cachedCraftBlockData",
-            "shapeExceedsCube"
-    );
     private static boolean persistedInstalled;
 
     private RealBlockRegistryBridge() {
@@ -335,18 +314,7 @@ public final class RealBlockRegistryBridge {
     }
 
     private static void copyStateSettings(BlockState source, BlockState target) {
-        Class<?> type = BlockBehaviour.BlockStateBase.class;
-        for (Field field : type.getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers()) || STATE_CACHE_FIELDS.contains(field.getName())) {
-                continue;
-            }
-            try {
-                field.setAccessible(true);
-                field.set(target, field.get(source));
-            } catch (ReflectiveOperationException exception) {
-                throw new IllegalStateException("unable to copy block state field " + field.getName(), exception);
-            }
-        }
+        ((BlockStateSettingsBridge) (Object) target).craftengine$copySettingsFrom(source);
     }
 
     public record StateInput(Object minecraftState, int rawStateId) {
