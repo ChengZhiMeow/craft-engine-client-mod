@@ -1,0 +1,15 @@
+name: CraftEngineRealBlock
+prefix: "默米-资源包引擎-真方块"
+version: "${version}"
+main: net.momirealms.craftengine.realblock.paper.CraftEngineRealBlockPlugin
+api-version: "1.21.11"
+load: STARTUP
+authors:
+  - XiaoMoMi
+description: Provides CraftEngine real registry blocks, collision shapes, resource-pack integration, and API.
+dependencies:
+  server:
+    CraftEngine:
+      load: BEFORE
+      required: true
+      join-classpath: true

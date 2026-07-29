@@ -1,0 +1,23 @@
+name: CraftEngineViaCompatibility
+prefix: "跨版本-CE支持"
+version: "${version}"
+main: net.momirealms.craftengine.viacompat.CraftEngineViaCompatibilityPlugin
+api-version: "1.21.11"
+load: STARTUP
+authors:
+  - XiaoMoMi
+description: Passes CraftEngine extended block-state IDs through ViaBackwards for cross-version clients.
+dependencies:
+  server:
+    CraftEngine:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    ViaVersion:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    ViaBackwards:
+      load: BEFORE
+      required: true
+      join-classpath: true

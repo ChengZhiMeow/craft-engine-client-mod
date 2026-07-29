@@ -6,7 +6,7 @@ version = property("project_version")!!
 group = property("project_group")!!
 
 base {
-    archivesName.set("craft-engine-real-block-ignite")
+    archivesName.set("[默米-资源包引擎-真方块]craft-engine-real-block-ignite")
 }
 
 repositories {

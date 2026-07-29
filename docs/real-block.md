@@ -4,7 +4,7 @@
 `settings`, `behavior`, `loot` and event configuration as the native `blocks` section, plus the real registry
 shape keys. A matching item uses `behavior.type: real_block_item`.
 
-For every configured entry, the Ignite mod and Paper companion plugin:
+For every configured entry, the Ignite mod and Real Block Paper plugin:
 
 1. resolves the normal CraftEngine block and all of its internal states;
 2. replaces the corresponding injected server registry entry with the requested ID;
@@ -158,10 +158,14 @@ persisted entry changes state count, the first start writes the new topology man
 restart is required. Start the server a second time before players join; Ignite then installs the new topology
 before worlds load.
 
-The server must be launched through Ignite and must contain both:
+The server must be launched through Ignite and must contain both Real Block components:
 
-- `mods/craft-engine-real-block-ignite-<version>.jar`
-- `plugins/craft-engine-via-compatibility-<version>.jar`
+- `mods/[默米-资源包引擎-真方块]craft-engine-real-block-ignite-<version>.jar`
+- `plugins/[默米-资源包引擎-真方块]craft-engine-real-block-paper-<version>.jar`
+
+For a 1.21.10 client connecting to the 1.21.11 server through ViaBackwards, also install:
+
+- `plugins/[跨版本-CE支持]craft-engine-via-compatibility-<version>.jar`
 
 Starting Paper's original JAR directly does not load the Ignite mod. On the supplied test server, use the separate
 `start_1_21_11_ignite_real_block.bat`; a correct startup reports Java 21 and Ignite's discovered mod before Paper
@@ -169,3 +173,39 @@ initializes plugins.
 
 Client `config/craftengine/config.yml` has `enable-real-block: true` by default. This option also enables
 CraftEngine's extended client block-state stream, even if the older `enable-client-custom-block` option is off.
+
+## Collision API
+
+Other Paper plugins can obtain the public API from Bukkit's services manager. Declare
+`CraftEngineRealBlock` as a server dependency with `join-classpath: true`, then load the service:
+
+```java
+CraftEngineRealBlockApi api = Bukkit.getServicesManager()
+        .load(CraftEngineRealBlockApi.class);
+if (api == null) {
+    throw new IllegalStateException("CraftEngineRealBlock API is unavailable");
+}
+
+api.getBlockCollision("zako:test_block").ifPresent(collision -> {
+    for (BlockCollision.State state : collision.states()) {
+        List<CollisionBox> boxes = state.boxes();
+        // state.stateIndex() is the zero-based ce_state value.
+    }
+});
+
+Optional<List<CollisionBox>> stateBoxes =
+        api.getCollisionBoxes("zako:test_block", 0);
+
+Optional<List<CollisionBox>> liveBlockBoxes =
+        api.getCollisionBoxes(bukkitBlock);
+
+Optional<List<CollisionBox>> snapshotBoxes =
+        api.getCollisionBoxes(bukkitBlockState);
+```
+
+The API types are in `net.momirealms.craftengine.realblock.api`. Box coordinates use CraftEngine's
+block-model coordinate system (`0..16`). An unknown block ID or state index returns `Optional.empty()`;
+a known state without collision returns a present, empty list. API results are immutable snapshots and
+are replaced after `/ce reload all`.
+The `Block` overload reads the live world and must run on the block's owning server/region thread. The
+`BlockState` overload resolves the state stored in that Bukkit snapshot.
