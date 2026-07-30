@@ -28,8 +28,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -44,7 +46,9 @@ import java.util.Set;
 public final class RealBlockRegistryBridge {
     private static final Logger LOGGER = LoggerFactory.getLogger("CraftEngineRealBlock");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path MANIFEST = Path.of("plugins", "CraftEngine", "real_blocks.registry.json");
+    private static final Path CRAFTENGINE_DIRECTORY = Path.of("plugins", "CraftEngine");
+    private static final Path MANIFEST = CRAFTENGINE_DIRECTORY.resolve("cache").resolve("real_blocks.registry.json");
+    private static final Path LEGACY_MANIFEST = CRAFTENGINE_DIRECTORY.resolve("real_blocks.registry.json");
     private static final String STATE_PROPERTY = "ce_state";
     private static final Map<String, Installation> INSTALLATIONS = new LinkedHashMap<>();
     private static boolean persistedInstalled;
@@ -60,12 +64,13 @@ public final class RealBlockRegistryBridge {
         if (persistedInstalled) {
             return;
         }
-        if (!Files.isRegularFile(MANIFEST)) {
-            persistedInstalled = true;
-            LOGGER.info("No persisted CraftEngine real-block registry manifest yet");
-            return;
-        }
         try {
+            migrateLegacyManifest(LEGACY_MANIFEST, MANIFEST);
+            if (!Files.isRegularFile(MANIFEST)) {
+                persistedInstalled = true;
+                LOGGER.info("No persisted CraftEngine real-block registry manifest yet");
+                return;
+            }
             JsonObject root = GSON.fromJson(Files.readString(MANIFEST, StandardCharsets.UTF_8), JsonObject.class);
             if (root == null || root.get("format") == null || root.get("format").getAsInt() != 1) {
                 throw new IllegalStateException("unsupported real-block registry manifest format");
@@ -103,6 +108,7 @@ public final class RealBlockRegistryBridge {
 
     public static synchronized void persist(String id, List<Integer> rawStateIds) {
         try {
+            migrateLegacyManifest(LEGACY_MANIFEST, MANIFEST);
             JsonObject root;
             if (Files.isRegularFile(MANIFEST)) {
                 root = GSON.fromJson(Files.readString(MANIFEST, StandardCharsets.UTF_8), JsonObject.class);
@@ -121,6 +127,19 @@ public final class RealBlockRegistryBridge {
         } catch (IOException exception) {
             throw new IllegalStateException("unable to persist real-block registry manifest", exception);
         }
+    }
+
+    static void migrateLegacyManifest(Path legacyManifest, Path manifest) throws IOException {
+        if (Files.isRegularFile(manifest) || !Files.isRegularFile(legacyManifest)) {
+            return;
+        }
+        Files.createDirectories(manifest.getParent());
+        try {
+            Files.move(legacyManifest, manifest, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException exception) {
+            Files.move(legacyManifest, manifest);
+        }
+        LOGGER.info("Migrated CraftEngine real-block registry manifest to {}", manifest);
     }
 
     public static synchronized void configureOcclusion(List<Object> states, Object shape) {
