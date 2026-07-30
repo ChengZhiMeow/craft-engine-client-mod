@@ -2,7 +2,7 @@ version = property("project_version")!!
 group = property("project_group")!!
 
 base {
-    archivesName.set("[跨版本-CE支持]craft-engine-via-compatibility")
+    archivesName.set("[默米-资源包引擎-跨版本]craft-engine-via-compatibility")
 }
 
 repositories {
