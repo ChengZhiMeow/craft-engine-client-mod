@@ -1,6 +1,7 @@
 rootProject.name = "craft-engine-client-mod"
 include(":neoforge")
 include(":via-compatibility-plugin")
+include(":real-block-api")
 include(":real-block-plugin")
 include(":ignite-mod")
 pluginManagement {

@@ -5,12 +5,20 @@ base {
     archivesName.set("[默米-资源包引擎-真方块]craft-engine-real-block-paper")
 }
 
+val embeddedApi = configurations.create("embeddedApi") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    isTransitive = false
+}
+
 repositories {
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://repo.momirealms.net/releases/")
 }
 
 dependencies {
+    implementation(project(":real-block-api"))
+    embeddedApi(project(":real-block-api"))
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("net.momirealms:craft-engine-core:26.7.4")
     compileOnly("net.momirealms:craft-engine-bukkit:26.7.4")
@@ -37,6 +45,13 @@ tasks.processResources {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(21)
+}
+
+tasks.jar {
+    dependsOn(":real-block-api:jar")
+    from({ embeddedApi.map(::zipTree) }) {
+        exclude("META-INF/MANIFEST.MF")
+    }
 }
 
 java {
@@ -107,6 +122,29 @@ val verifyNoViaLinkage = tasks.register("verifyNoViaLinkage") {
     }
 }
 
+val verifyEmbeddedApi = tasks.register("verifyEmbeddedApi") {
+    group = "verification"
+    description = "Ensures the Paper runtime JAR contains the public Real Block API."
+    dependsOn(tasks.jar)
+
+    doLast {
+        val jarFile = tasks.jar.get().archiveFile.get().asFile
+        val requiredEntries = setOf(
+            "net/momirealms/craftengine/realblock/api/BlockCollision.class",
+            "net/momirealms/craftengine/realblock/api/CollisionBox.class",
+            "net/momirealms/craftengine/realblock/api/CraftEngineRealBlockApi.class"
+        )
+        val entries = zipTree(jarFile).matching {
+            include("net/momirealms/craftengine/realblock/api/*.class")
+        }.files.mapTo(mutableSetOf()) { file ->
+            "net/momirealms/craftengine/realblock/api/${file.name}"
+        }
+        check(entries.containsAll(requiredEntries)) {
+            "Real Block Paper plugin is missing public API classes: ${requiredEntries - entries}"
+        }
+    }
+}
+
 tasks.check {
-    dependsOn(verifyNoDirectIgniteLinkage, verifyNoViaLinkage)
+    dependsOn(verifyNoDirectIgniteLinkage, verifyNoViaLinkage, verifyEmbeddedApi)
 }

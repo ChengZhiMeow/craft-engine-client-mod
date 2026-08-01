@@ -176,6 +176,18 @@ CraftEngine's extended client block-state stream, even if the older `enable-clie
 
 ## Collision API
 
+Add the release repository and the API-only dependency to the consuming plugin:
+
+```kotlin
+repositories {
+    maven("https://repo.xmxcraft.cn/releases")
+}
+
+dependencies {
+    compileOnly("net.momirealms:craft-engine-real-block-api:26.7.1-realblock.11")
+}
+```
+
 Other Paper plugins can obtain the public API from Bukkit's services manager. Declare
 `CraftEngineRealBlock` as a server dependency with `join-classpath: true`, then load the service:
 
